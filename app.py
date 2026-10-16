@@ -40,7 +40,9 @@ async def transcribe(file: UploadFile = File(...)):
     audio = await file.read()
     if len(audio) < 2048:  # silence / empty chunk
         return {"transcript": "", "language_code": None}
-    return await sarvam.transcribe(audio, file.filename or "chunk.webm", file.content_type or "audio/webm")
+    # Browsers send "audio/webm;codecs=opus"; Sarvam only accepts the bare type.
+    content_type = (file.content_type or "audio/webm").split(";")[0].strip()
+    return await sarvam.transcribe(audio, file.filename or "chunk.webm", content_type)
 
 
 @app.post("/api/analyze")

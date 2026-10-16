@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Teesra Kaan</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%91%82%3C/text%3E%3C/svg%3E">
 <style>
   :root {
     --bg: #f6f5f1; --surface: #ffffff; --text: #1d1d1b; --muted: #6b6a64; --border: #dedcd3;
@@ -134,7 +135,7 @@
       </div>
       <div class="row">
         <button id="whisperBtn" disabled>🔊 Whisper warning</button>
-        <label class="row"><input type="checkbox" id="auto" checked> Auto-whisper on new high flag</label>
+        <label class="row"><input type="checkbox" id="auto" checked> Auto-whisper the first high flag</label>
         <span class="busy" id="analysisStatus"></span>
       </div>
     </div>
@@ -153,7 +154,7 @@ const SAMPLES = {
 
 let stream = null, listening = false, recorder = null, chunkTimer = null;
 let fullTranscript = "", lastAnalyzedLen = 0, analyzing = false, pending = false;
-let uploadQueue = Promise.resolve(), lastWhisper = "", spokenHigh = new Set(), currentAudio = null;
+let autoSpoken = false, uploadQueue = Promise.resolve(), lastWhisper = "", spokenHigh = new Set(), currentAudio = null;
 
 function toast(msg) {
   const t = $("toast"); t.textContent = msg; t.style.display = "block";
@@ -193,7 +194,7 @@ function renderCost(c) {
     const bad = I.real_annual_percent < I.fd_benchmark_percent;
     el.innerHTML = `<h2>Real return of this policy</h2>
       <div class="big ${bad ? "bad" : "good"}">${I.real_annual_percent}% <small style="font-size:1rem;font-weight:500">per year</small></div>
-      <div class="sub">${I.claimed_return_percent != null ? "Agent claimed: " + esc(I.claimed_return_percent) + " · " : ""}Bank FD benchmark: ~${I.fd_benchmark_percent}%</div>
+      <div class="sub">${I.claimed_return_percent != null ? "Agent claimed: " + esc(I.claimed_return_percent) + "% · " : ""}Bank FD benchmark: ~${I.fd_benchmark_percent}%</div>
       <div class="stats">
         <div class="stat"><b>${inr(I.total_premiums)}</b><span>Total premiums you pay</span></div>
         <div class="stat"><b>${inr(I.maturity_amount)}</b><span>You get at maturity</span></div>
@@ -249,7 +250,7 @@ async function runAnalysis() {
     $("whisperBtn").disabled = !lastWhisper;
     const newHigh = (x.red_flags || []).filter(f => f.severity === "high" && !spokenHigh.has(f.title_en));
     newHigh.forEach(f => spokenHigh.add(f.title_en));
-    if (newHigh.length && $("auto").checked && lastWhisper) whisper();
+    if (newHigh.length && $("auto").checked && lastWhisper && !autoSpoken) { autoSpoken = true; whisper(); }
   } catch (e) {
     toast("Analysis failed: " + e.message);
   } finally {
@@ -338,7 +339,7 @@ $("micBtn").onclick = async () => {
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch (e) { toast("Microphone permission denied."); return; }
-  fullTranscript = ""; lastAnalyzedLen = 0; spokenHigh.clear(); $("transcript").textContent = "";
+  fullTranscript = ""; lastAnalyzedLen = 0; spokenHigh.clear(); autoSpoken = false; $("transcript").textContent = "";
   listening = true;
   $("micBtn").textContent = "■ Stop"; $("micBtn").classList.add("stop");
   $("dot").classList.add("live"); $("status").textContent = "Listening…";
@@ -351,7 +352,7 @@ $("sampleIns").onclick = () => $("demoText").value = SAMPLES.insurance;
 $("demoBtn").onclick = () => {
   const t = $("demoText").value.trim();
   if (t.length < 20) { toast("Enter a longer conversation first."); return; }
-  fullTranscript = t; $("transcript").textContent = t; spokenHigh.clear();
+  fullTranscript = t; $("transcript").textContent = t; spokenHigh.clear(); autoSpoken = false;
   runAnalysis();
 };
 </script>
