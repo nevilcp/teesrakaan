@@ -9,6 +9,13 @@ LANG_NAMES = {
     "pa-IN": "Punjabi", "od-IN": "Odia", "en-IN": "English",
 }
 
+SCRIPTS = {
+    "hi-IN": "Devanagari (हिन्दी)", "mr-IN": "Devanagari (मराठी)", "bn-IN": "Bengali script (বাংলা)",
+    "ta-IN": "Tamil script (தமிழ்)", "te-IN": "Telugu script (తెలుగు)", "kn-IN": "Kannada script (ಕನ್ನಡ)",
+    "ml-IN": "Malayalam script (മലയാളം)", "gu-IN": "Gujarati script (ગુજરાતી)",
+    "pa-IN": "Gurmukhi (ਪੰਜਾਬੀ)", "od-IN": "Odia script (ଓଡ଼ିଆ)", "en-IN": "English",
+}
+
 SYSTEM_PROMPT = """You are Teesra Kaan, a voice advocate who works for the CUSTOMER (borrower or policyholder), not the agent. You read a transcript of a conversation between a customer and a loan or insurance agent and warn the customer about anything unfair.
 
 Rules:
@@ -16,9 +23,9 @@ Rules:
 - Convert Indian amounts to plain rupees: "1 lakh" = 100000, "50 hazaar" = 50000. Convert tenure to months: "do saal" = 24.
 - rate_type is "flat" if the rate is called flat, or charged per month on the original amount (e.g. "har mahine 1.5%" on the full principal). "reducing" if called reducing/diminishing balance. Otherwise "unknown".
 - rate_period is "month" or "year" (how the quoted rate is expressed).
-- insurance_financed is true if the insurance premium is added to the loan amount, false if paid upfront or deducted.
 - Flag these tricks when present: flat rate quoted as a monthly rate, fees deducted from the disbursed amount, bundled or "compulsory" insurance, "guaranteed" or "bonus" returns, pressure to sign today, foreclosure or prepayment penalties, vague answers about total cost, "0% interest" with hidden fees, blank signatures or documents.
-- Write "explain", "questions_to_ask", "top_warning" and "real_cost_sentence" in {lang_name}, in its native script, in simple spoken language. "title_en" and "summary_en" are in English.
+- Write "explain", "questions_to_ask", "top_warning" and "real_cost_sentence" in {lang_name}, written in its native script (for example Devanagari for Hindi), NEVER in Roman/Latin letters, in simple spoken language. "title_en" and "summary_en" are in English.
+- Style example for Hindi (copy the SCRIPT, not the words): "एजेंट आप पर आज ही साइन करने का दबाव डाल रहा है। पूरा खर्च पूछे बिना दस्तखत न करें।" It must NOT look like "Agent aap par dabaav daal raha hai".
 - "top_warning" is 1-2 short sentences and must contain NO computed numbers.
 - "real_cost_sentence" is one sentence in {lang_name} that contains the literal token {{REAL_RATE}} exactly once where the real yearly percentage belongs.
 - "questions_to_ask" has 3-5 short questions the customer can say out loud to the agent.
@@ -27,7 +34,7 @@ Rules:
 Respond with ONLY a JSON object of exactly this shape:
 {{
   "product_type": "loan" | "insurance" | "unknown",
-  "loan": {{"principal": null, "tenure_months": null, "quoted_rate_percent": null, "rate_period": null, "rate_type": null, "emi_quoted": null, "processing_fee": null, "processing_fee_percent": null, "insurance_premium": null, "insurance_financed": null, "other_fees": null}},
+  "loan": {{"principal": null, "tenure_months": null, "quoted_rate_percent": null, "rate_period": null, "rate_type": null, "emi_quoted": null, "processing_fee": null, "processing_fee_percent": null, "insurance_premium": null, "other_fees": null}},
   "insurance": {{"annual_premium": null, "premium_paying_years": null, "policy_years": null, "maturity_amount": null, "sum_assured": null, "claimed_return_percent": null}},
   "red_flags": [{{"severity": "high" | "medium" | "low", "title_en": "", "explain": ""}}],
   "questions_to_ask": [],
@@ -72,7 +79,9 @@ async def analyze(transcript: str, language_code: str) -> dict:
     lang = LANG_NAMES.get(language_code, "Hindi")
     x = await sarvam.chat_json(
         SYSTEM_PROMPT.format(lang_name=lang),
-        f"Conversation transcript so far:\n{transcript}",
+        f"Conversation transcript so far:\n{transcript}\n\n"
+        f"REMINDER: the transcript may be in Roman letters, but write explain, questions_to_ask, top_warning and "
+        f"real_cost_sentence in {lang} using {SCRIPTS.get(language_code, 'its native script')} only, not Roman letters.",
     )
 
     loan = _safe(calc.loan_cost, x.get("loan"))
@@ -91,7 +100,8 @@ async def analyze(transcript: str, language_code: str) -> dict:
     x["red_flags"] = flags + list(x.get("red_flags") or [])
 
     real_rate = (loan or ins or {}).get("real_annual_percent")
-    parts = [x.get("top_warning") or ""]
+    explained = sorted((f for f in x["red_flags"] if f.get("explain")), key=lambda f: f.get("severity") != "high")
+    parts = [x.get("top_warning") or (explained[0]["explain"] if explained else "")]
     sentence = x.get("real_cost_sentence") or ""
     if real_rate is not None and "{REAL_RATE}" in sentence:
         parts.append(sentence.replace("{REAL_RATE}", _fmt(real_rate)))

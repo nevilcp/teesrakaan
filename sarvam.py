@@ -76,7 +76,7 @@ async def chat_json(system: str, user: str) -> dict:
         "model": "sarvam-105b",
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
         "temperature": 0.2,
-        "reasoning_effort": "low",
+        "reasoning_effort": None,  # extraction needs no reasoning; "low" burned the whole token budget
         "max_tokens": 4096,
         "response_format": {"type": "json_object"},
     }
