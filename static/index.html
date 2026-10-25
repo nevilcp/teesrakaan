@@ -3,319 +3,46 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Teesra Kaan</title>
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%91%82%3C/text%3E%3C/svg%3E"
+    <meta
+      name="description"
+      content="Teesra Kaan listens to a loan or insurance pitch and warns you, in your own language, when something is off."
     />
-    <style>
-      :root {
-        --bg: #f6f5f1;
-        --surface: #ffffff;
-        --text: #1d1d1b;
-        --muted: #6b6a64;
-        --border: #dedcd3;
-        --accent: #1f6feb;
-        --danger: #c62828;
-        --danger-bg: #fdecea;
-        --warn: #b26a00;
-        --warn-bg: #fff4e0;
-        --ok: #2e7d32;
-        --low: #5a5a52;
-        --low-bg: #eeeee8;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #151513;
-          --surface: #1f1f1c;
-          --text: #ecebe5;
-          --muted: #a09f96;
-          --border: #34332e;
-          --accent: #5b9bff;
-          --danger: #ff6b6b;
-          --danger-bg: #3a1f1f;
-          --warn: #ffb44d;
-          --warn-bg: #3a2c14;
-          --ok: #6fcf7a;
-          --low: #bdbcb2;
-          --low-bg: #2b2b27;
-        }
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family:
-          system-ui,
-          -apple-system,
-          "Segoe UI",
-          Roboto,
-          "Noto Sans",
-          sans-serif;
-        line-height: 1.45;
-      }
-      .wrap {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 16px;
-      }
-      header {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-      }
-      h1 {
-        margin: 0;
-        font-size: 1.5rem;
-      }
-      .tag {
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-      }
-      @media (max-width: 760px) {
-        .grid {
-          grid-template-columns: 1fr;
-        }
-      }
-      .card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 16px;
-      }
-      .card h2 {
-        margin: 0 0 10px;
-        font-size: 1rem;
-        color: var(--muted);
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-      button,
-      select,
-      textarea {
-        font: inherit;
-        color: inherit;
-      }
-      button {
-        background: var(--accent);
-        color: #fff;
-        border: 0;
-        border-radius: 8px;
-        padding: 10px 16px;
-        cursor: pointer;
-        font-weight: 600;
-      }
-      button.secondary {
-        background: transparent;
-        color: var(--accent);
-        border: 1px solid var(--accent);
-      }
-      button.stop {
-        background: var(--danger);
-      }
-      button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-      select {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 8px 10px;
-      }
-      .row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-      }
-      .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--border);
-      }
-      .dot.live {
-        background: var(--danger);
-        animation: pulse 1s infinite;
-      }
-      @keyframes pulse {
-        50% {
-          opacity: 0.3;
-        }
-      }
-      #transcript {
-        margin-top: 12px;
-        height: 200px;
-        overflow-y: auto;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px;
-        white-space: pre-wrap;
-        font-size: 0.95rem;
-      }
-      #transcript:empty::before {
-        content: "Transcript will appear here…";
-        color: var(--muted);
-      }
-      details {
-        margin-top: 4px;
-      }
-      summary {
-        cursor: pointer;
-        color: var(--muted);
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-      textarea {
-        width: 100%;
-        min-height: 120px;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px;
-        margin: 8px 0;
-      }
-      .big {
-        font-size: 3rem;
-        font-weight: 800;
-        line-height: 1;
-      }
-      .big.bad {
-        color: var(--danger);
-      }
-      .big.good {
-        color: var(--ok);
-      }
-      .sub {
-        color: var(--muted);
-        margin: 4px 0 12px;
-      }
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-      }
-      .stat {
-        background: var(--bg);
-        border-radius: 8px;
-        padding: 8px 10px;
-      }
-      .stat b {
-        display: block;
-        font-size: 1.05rem;
-      }
-      .stat span {
-        color: var(--muted);
-        font-size: 0.8rem;
-      }
-      .empty {
-        color: var(--muted);
-      }
-      .flag {
-        border-radius: 8px;
-        padding: 10px 12px;
-        margin-bottom: 8px;
-        background: var(--low-bg);
-        border-left: 4px solid var(--low);
-      }
-      .flag.high {
-        background: var(--danger-bg);
-        border-color: var(--danger);
-      }
-      .flag.medium {
-        background: var(--warn-bg);
-        border-color: var(--warn);
-      }
-      .flag .t {
-        font-weight: 700;
-      }
-      .flag .e {
-        margin-top: 2px;
-      }
-      .chip {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        font-weight: 700;
-        margin-right: 6px;
-      }
-      ul.q {
-        margin: 0;
-        padding-left: 20px;
-      }
-      ul.q li {
-        margin-bottom: 6px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.9rem;
-      }
-      td {
-        padding: 4px 0;
-        border-bottom: 1px solid var(--border);
-      }
-      td:last-child {
-        text-align: right;
-        font-weight: 600;
-      }
-      #toast {
-        position: fixed;
-        bottom: 16px;
-        left: 16px;
-        right: 16px;
-        max-width: 520px;
-        margin: 0 auto;
-        background: var(--danger);
-        color: #fff;
-        padding: 12px 14px;
-        border-radius: 10px;
-        display: none;
-        cursor: pointer;
-        z-index: 10;
-        word-break: break-word;
-      }
-      #banner {
-        display: none;
-        background: var(--warn-bg);
-        color: var(--warn);
-        border: 1px solid var(--warn);
-        padding: 10px 14px;
-        border-radius: 10px;
-        margin-bottom: 16px;
-      }
-      .busy {
-        color: var(--muted);
-        font-size: 0.85rem;
-      }
-    </style>
+    <meta name="color-scheme" content="light dark" />
+    <title>Teesra Kaan</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="stylesheet" href="/static/css/styles.css" />
   </head>
   <body>
     <div class="wrap">
-      <header>
-        <div>
-          <h1>👂 Teesra Kaan</h1>
-          <div class="tag">
-            The third ear. Works for the person across the table.
+      <header class="header">
+        <div class="brand">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="currentColor" />
+            <path
+              d="M16 7.5c-3.6 0-6 2.5-6 6 0 2.2 1 3.4 2 4.5 1 1.1 1.5 1.8 1.5 3.2a2.6 2.6 0 0 0 5.2 0M16 11.5c-1.8 0-3 1.2-3 2.8"
+              fill="none"
+              stroke="#fff"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M21 11.5a6 6 0 0 1 0 8"
+              fill="none"
+              stroke="#fff"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+          <div>
+            <h1>Teesra Kaan</h1>
+            <p class="tagline">
+              The third ear. Works for the person across the table.
+            </p>
           </div>
         </div>
-        <label class="row"
-          >Warn me in
+        <div class="field">
+          <label for="lang">Warn me in</label>
           <select id="lang">
             <option value="hi-IN">हिन्दी (Hindi)</option>
             <option value="en-IN">English</option>
@@ -329,410 +56,117 @@
             <option value="pa-IN">ਪੰਜਾਬੀ (Punjabi)</option>
             <option value="od-IN">ଓଡ଼ିଆ (Odia)</option>
           </select>
-        </label>
+        </div>
       </header>
 
-      <div id="banner">
+      <div id="banner" class="banner" role="alert" hidden>
         Sarvam API key not configured. Create a <code>.env</code> file with
         <code>SARVAM_API_KEY=...</code> and restart the server.
       </div>
 
-      <div class="grid">
-        <div>
-          <div class="card">
-            <h2>Listen</h2>
-            <div class="row">
-              <button id="micBtn">🎙 Start listening</button>
+      <main class="layout">
+        <section class="card area-listen" aria-labelledby="listen-title">
+          <h2 id="listen-title" class="card-title">Listen</h2>
+          <div class="controls">
+            <button id="micBtn" class="btn btn-primary" type="button">
+              <svg class="ic ic-mic" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0M12 17v4"
+                />
+              </svg>
+              <svg class="ic ic-stop" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="6" y="6" width="12" height="12" rx="2" />
+              </svg>
+              <span id="micLabel">Start listening</span>
+            </button>
+            <span class="status" role="status" aria-live="polite">
               <span class="dot" id="dot"></span>
-              <span class="busy" id="status">Idle</span>
-            </div>
-            <div id="transcript"></div>
+              <span id="status">Idle</span>
+            </span>
           </div>
-          <div class="card">
-            <details>
-              <summary>Demo mode (no microphone)</summary>
-              <div class="row">
-                <button class="secondary" id="sampleLoan">
-                  Sample: loan pitch
-                </button>
-                <button class="secondary" id="sampleIns">
-                  Sample: insurance pitch
-                </button>
-              </div>
-              <textarea
-                id="demoText"
-                placeholder="Paste or type a conversation transcript…"
-              ></textarea>
-              <button id="demoBtn">Analyze text</button>
-            </details>
-          </div>
-        </div>
+          <div
+            id="transcript"
+            class="transcript"
+            tabindex="0"
+            aria-label="Live transcript"
+          ></div>
+        </section>
 
-        <div>
-          <div class="card" id="costCard">
-            <h2>Real cost</h2>
-            <div class="empty">Waiting for loan or insurance numbers…</div>
-          </div>
-          <div class="card">
-            <h2>Red flags</h2>
-            <div id="flags" class="empty">None yet.</div>
-          </div>
-          <div class="card">
-            <h2>Ask them this</h2>
-            <div id="questions" class="empty">None yet.</div>
-          </div>
-          <div class="card">
-            <h2>What was said</h2>
-            <div id="terms" class="empty">Nothing extracted yet.</div>
-          </div>
-          <div class="row">
-            <button id="whisperBtn" disabled>🔊 Whisper warning</button>
-            <label class="row"
-              ><input type="checkbox" id="auto" checked /> Auto-whisper the
-              first high flag</label
+        <div class="area-results">
+          <section class="card whisper-bar" aria-label="Spoken warning">
+            <button
+              id="whisperBtn"
+              class="btn btn-primary"
+              type="button"
+              disabled
             >
-            <span class="busy" id="analysisStatus"></span>
-          </div>
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M11 5 6 9H3v6h3l5 4V5Zm4.5 3.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12"
+                />
+              </svg>
+              Whisper warning
+            </button>
+            <label class="check">
+              <input type="checkbox" id="auto" checked />
+              Auto-whisper the first high flag
+            </label>
+            <span class="muted" id="analysisStatus" role="status"></span>
+          </section>
+
+          <section class="card" id="costCard" aria-live="polite">
+            <h2 class="card-title">Real cost</h2>
+            <p class="empty">Waiting for loan or insurance numbers…</p>
+          </section>
+
+          <section class="card" aria-labelledby="flags-title">
+            <h2 id="flags-title" class="card-title">Red flags</h2>
+            <div id="flags" class="empty" aria-live="polite">None yet.</div>
+          </section>
+
+          <section class="card" aria-labelledby="questions-title">
+            <h2 id="questions-title" class="card-title">Ask them this</h2>
+            <div id="questions" class="empty" aria-live="polite">None yet.</div>
+          </section>
+
+          <section class="card" aria-labelledby="terms-title">
+            <h2 id="terms-title" class="card-title">What was said</h2>
+            <div id="terms" class="empty">Nothing extracted yet.</div>
+          </section>
         </div>
-      </div>
+
+        <section class="card area-demo" aria-labelledby="demo-title">
+          <h2 id="demo-title" class="card-title">Demo mode</h2>
+          <p class="muted">
+            No microphone? Load a sample pitch or paste a conversation.
+          </p>
+          <div class="controls">
+            <button id="sampleLoan" class="btn btn-outline" type="button">
+              Sample: loan pitch
+            </button>
+            <button id="sampleIns" class="btn btn-outline" type="button">
+              Sample: insurance pitch
+            </button>
+          </div>
+          <label class="sr-only" for="demoText">Conversation transcript</label>
+          <textarea
+            id="demoText"
+            rows="5"
+            placeholder="Paste or type a conversation transcript…"
+          ></textarea>
+          <button id="demoBtn" class="btn btn-primary" type="button">
+            Analyze text
+          </button>
+        </section>
+      </main>
+
+      <footer class="footer">
+        Prototype, not financial advice. Read the sanction letter and key fact
+        statement before you sign.
+      </footer>
     </div>
-    <div id="toast"></div>
 
-    <script>
-      const $ = (id) => document.getElementById(id);
-      const CHUNK_MS = 12000,
-        MIN_NEW_CHARS = 40;
-
-      const SAMPLES = {
-        loan: "Agent: Sir, aapko ek lakh rupaye ka personal loan mil jayega, do saal ke liye. Sirf 1.5% mahina, flat rate. Customer: Aur charges? Agent: Bas 2% processing fee, woh disbursal mein se kat jayegi. Aur paanch hazaar ka insurance compulsory hai, woh bhi lagega. Aaj hi sign karna padega, offer kal khatam ho jayega.",
-        insurance:
-          "Agent: Ye plan bahut accha hai. Aap har saal pachaas hazaar rupaye bharenge, das saal tak. Fifteen saal baad aapko saat lakh pachaas hazaar milenge, guaranteed. Matlab 8% guaranteed return, FD se better hai. Bas aaj hi form bhar dijiye, bonus offer khatam ho raha hai.",
-      };
-
-      let stream = null,
-        listening = false,
-        recorder = null,
-        chunkTimer = null;
-      let fullTranscript = "",
-        lastAnalyzedLen = 0,
-        analyzing = false,
-        pending = false;
-      let autoSpoken = false,
-        uploadQueue = Promise.resolve(),
-        lastWhisper = "",
-        spokenHigh = new Set(),
-        currentAudio = null;
-
-      function toast(msg) {
-        const t = $("toast");
-        t.textContent = msg;
-        t.style.display = "block";
-        clearTimeout(toast.h);
-        toast.h = setTimeout(() => (t.style.display = "none"), 8000);
-      }
-      $("toast").onclick = () => ($("toast").style.display = "none");
-
-      async function api(path, opts) {
-        const r = await fetch(path, opts);
-        let j = null;
-        try {
-          j = await r.json();
-        } catch (e) {}
-        if (!r.ok)
-          throw new Error(
-            j && (j.error || j.detail)
-              ? String(j.error || j.detail)
-              : "Request failed (" + r.status + ")",
-          );
-        return j;
-      }
-
-      const inr = (n) => "₹" + Number(n).toLocaleString("en-IN");
-      const esc = (s) =>
-        String(s ?? "").replace(
-          /[&<>"]/g,
-          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
-        );
-
-      fetch("/api/health")
-        .then((r) => r.json())
-        .then((h) => {
-          if (!h.key_configured) $("banner").style.display = "block";
-        })
-        .catch(() => {});
-
-      // ---------- rendering ----------
-      function renderCost(c) {
-        const el = $("costCard");
-        const L = c.loan,
-          I = c.insurance;
-        if (L && L.real_annual_percent != null) {
-          const bad =
-            L.quoted_annual_percent &&
-            L.real_annual_percent >= 1.3 * L.quoted_annual_percent;
-          el.innerHTML = `<h2>Real cost of this loan</h2>
-      <div class="big ${bad ? "bad" : "good"}">${L.real_annual_percent}% <small style="font-size:1rem;font-weight:500">per year</small></div>
-      <div class="sub">${L.quoted_annual_percent ? "Agent said: " + L.quoted_annual_percent + "% per year equivalent" : "Based on the EMI quoted"}</div>
-      <div class="stats">
-        <div class="stat"><b>${inr(L.emi)}</b><span>EMI per month</span></div>
-        <div class="stat"><b>${inr(L.cash_in_hand)}</b><span>Cash you actually get</span></div>
-        <div class="stat"><b>${inr(L.total_paid)}</b><span>Total you pay</span></div>
-        <div class="stat"><b>${inr(L.total_extra)}</b><span>Extra paid over what you got</span></div>
-      </div>`;
-        } else if (I && I.real_annual_percent != null) {
-          const bad = I.real_annual_percent < I.fd_benchmark_percent;
-          el.innerHTML = `<h2>Real return of this policy</h2>
-      <div class="big ${bad ? "bad" : "good"}">${I.real_annual_percent}% <small style="font-size:1rem;font-weight:500">per year</small></div>
-      <div class="sub">${I.claimed_return_percent != null ? "Agent claimed: " + esc(I.claimed_return_percent) + "% · " : ""}Bank FD benchmark: ~${I.fd_benchmark_percent}%</div>
-      <div class="stats">
-        <div class="stat"><b>${inr(I.total_premiums)}</b><span>Total premiums you pay</span></div>
-        <div class="stat"><b>${inr(I.maturity_amount)}</b><span>You get at maturity</span></div>
-      </div>`;
-        } else {
-          el.innerHTML = `<h2>Real cost</h2><div class="empty">Waiting for loan or insurance numbers…</div>`;
-        }
-      }
-
-      function renderFlags(flags) {
-        $("flags").className = flags.length ? "" : "empty";
-        $("flags").innerHTML = flags.length
-          ? flags
-              .map((f) => {
-                const sev = ["high", "medium"].includes(f.severity)
-                  ? f.severity
-                  : "low";
-                return `<div class="flag ${sev}"><div class="t"><span class="chip">${sev}</span>${esc(f.title_en)}</div>${f.explain ? `<div class="e">${esc(f.explain)}</div>` : ""}</div>`;
-              })
-              .join("")
-          : "No red flags detected so far.";
-      }
-
-      function renderQuestions(qs) {
-        $("questions").className = qs.length ? "" : "empty";
-        $("questions").innerHTML = qs.length
-          ? `<ul class="q">${qs.map((q) => `<li>${esc(q)}</li>`).join("")}</ul>`
-          : "None yet.";
-      }
-
-      const LABELS = {
-        principal: "Loan amount",
-        tenure_months: "Tenure (months)",
-        quoted_rate_percent: "Quoted rate %",
-        rate_period: "Rate period",
-        rate_type: "Rate type",
-        emi_quoted: "EMI quoted",
-        processing_fee: "Processing fee",
-        processing_fee_percent: "Processing fee %",
-        insurance_premium: "Insurance premium",
-        insurance_financed: "Insurance added to loan",
-        other_fees: "Other fees",
-        annual_premium: "Annual premium",
-        premium_paying_years: "Premium paying years",
-        policy_years: "Policy years",
-        maturity_amount: "Maturity amount",
-        sum_assured: "Sum assured",
-        claimed_return_percent: "Claimed return %",
-      };
-      function renderTerms(x) {
-        const group = x.product_type === "insurance" ? x.insurance : x.loan;
-        const rows = Object.entries(group || {}).filter(
-          ([, v]) => v !== null && v !== undefined && v !== "",
-        );
-        $("terms").className = rows.length ? "" : "empty";
-        $("terms").innerHTML = rows.length
-          ? `<table>${rows.map(([k, v]) => `<tr><td>${esc(LABELS[k] || k)}</td><td>${esc(v)}</td></tr>`).join("")}</table>`
-          : "Nothing extracted yet.";
-      }
-
-      // ---------- analysis ----------
-      async function runAnalysis() {
-        if (analyzing) {
-          pending = true;
-          return;
-        }
-        if (fullTranscript.trim().length < 20) return;
-        analyzing = true;
-        pending = false;
-        $("analysisStatus").textContent = "Analyzing…";
-        lastAnalyzedLen = fullTranscript.length;
-        try {
-          const x = await api("/api/analyze", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              transcript: fullTranscript,
-              language_code: $("lang").value,
-            }),
-          });
-          renderCost(x.calc);
-          renderFlags(x.red_flags || []);
-          renderQuestions(x.questions_to_ask || []);
-          renderTerms(x);
-          lastWhisper = x.whisper_text || "";
-          $("whisperBtn").disabled = !lastWhisper;
-          const newHigh = (x.red_flags || []).filter(
-            (f) => f.severity === "high" && !spokenHigh.has(f.title_en),
-          );
-          newHigh.forEach((f) => spokenHigh.add(f.title_en));
-          if (
-            newHigh.length &&
-            $("auto").checked &&
-            lastWhisper &&
-            !autoSpoken
-          ) {
-            autoSpoken = true;
-            whisper();
-          }
-        } catch (e) {
-          toast("Analysis failed: " + e.message);
-        } finally {
-          analyzing = false;
-          $("analysisStatus").textContent = "";
-          if (
-            pending ||
-            (listening &&
-              fullTranscript.length - lastAnalyzedLen >= MIN_NEW_CHARS)
-          )
-            runAnalysis();
-        }
-      }
-
-      function appendTranscript(text) {
-        if (!text) return;
-        fullTranscript += (fullTranscript ? "\n" : "") + text;
-        $("transcript").textContent = fullTranscript;
-        $("transcript").scrollTop = $("transcript").scrollHeight;
-        if (fullTranscript.length - lastAnalyzedLen >= MIN_NEW_CHARS)
-          runAnalysis();
-      }
-
-      // ---------- whisper (TTS) ----------
-      async function whisper() {
-        if (!lastWhisper) return;
-        $("whisperBtn").disabled = true;
-        try {
-          const { audio_b64 } = await api("/api/speak", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              text: lastWhisper,
-              language_code: $("lang").value,
-            }),
-          });
-          if (currentAudio) currentAudio.pause();
-          currentAudio = new Audio("data:audio/wav;base64," + audio_b64);
-          await currentAudio.play();
-        } catch (e) {
-          toast("Could not play warning: " + e.message);
-        } finally {
-          $("whisperBtn").disabled = !lastWhisper;
-        }
-      }
-      $("whisperBtn").onclick = whisper;
-
-      // ---------- microphone, in complete rolling chunks ----------
-      function enqueueUpload(blob) {
-        uploadQueue = uploadQueue.then(async () => {
-          if (blob.size < 2048) return;
-          $("status").textContent = "Transcribing…";
-          try {
-            const fd = new FormData();
-            fd.append("file", blob, "chunk.webm");
-            const r = await api("/api/transcribe", {
-              method: "POST",
-              body: fd,
-            });
-            appendTranscript((r.transcript || "").trim());
-          } catch (e) {
-            toast("Transcription failed: " + e.message);
-          } finally {
-            $("status").textContent = listening ? "Listening…" : "Idle";
-          }
-        });
-        return uploadQueue;
-      }
-
-      function startChunk() {
-        const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-          ? "audio/webm;codecs=opus"
-          : "";
-        recorder = new MediaRecorder(
-          stream,
-          mime ? { mimeType: mime } : undefined,
-        );
-        const parts = [];
-        recorder.ondataavailable = (e) => {
-          if (e.data.size) parts.push(e.data);
-        };
-        recorder.onstop = () => {
-          enqueueUpload(
-            new Blob(parts, { type: recorder.mimeType || "audio/webm" }),
-          );
-          if (listening) startChunk();
-          else finishStop();
-        };
-        recorder.start();
-        chunkTimer = setTimeout(() => {
-          if (recorder.state === "recording") recorder.stop();
-        }, CHUNK_MS);
-      }
-
-      async function finishStop() {
-        stream.getTracks().forEach((t) => t.stop());
-        await uploadQueue;
-        $("status").textContent = "Idle";
-        runAnalysis();
-      }
-
-      $("micBtn").onclick = async () => {
-        if (listening) {
-          listening = false;
-          clearTimeout(chunkTimer);
-          $("micBtn").textContent = "🎙 Start listening";
-          $("micBtn").classList.remove("stop");
-          $("dot").classList.remove("live");
-          $("status").textContent = "Finishing…";
-          if (recorder && recorder.state === "recording") recorder.stop();
-          return;
-        }
-        if (!navigator.mediaDevices || !window.MediaRecorder) {
-          toast("This browser does not support microphone recording.");
-          return;
-        }
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (e) {
-          toast("Microphone permission denied.");
-          return;
-        }
-        fullTranscript = "";
-        lastAnalyzedLen = 0;
-        spokenHigh.clear();
-        autoSpoken = false;
-        $("transcript").textContent = "";
-        listening = true;
-        $("micBtn").textContent = "■ Stop";
-        $("micBtn").classList.add("stop");
-        $("dot").classList.add("live");
-        $("status").textContent = "Listening…";
-        startChunk();
-      };
-
-      // ---------- demo mode ----------
-      $("sampleLoan").onclick = () => ($("demoText").value = SAMPLES.loan);
-      $("sampleIns").onclick = () => ($("demoText").value = SAMPLES.insurance);
-      $("demoBtn").onclick = () => {
-        const t = $("demoText").value.trim();
-        if (t.length < 20) {
-          toast("Enter a longer conversation first.");
-          return;
-        }
-        fullTranscript = t;
-        $("transcript").textContent = t;
-        spokenHigh.clear();
-        autoSpoken = false;
-        runAnalysis();
-      };
-    </script>
+    <div id="toast" class="toast" role="alert" hidden></div>
+    <script type="module" src="/static/js/main.js"></script>
   </body>
 </html>
