@@ -4,52 +4,57 @@
 
 ### The third ear for the customer's side of the counter
 
-A real-time voice assistant that listens to a loan or insurance pitch and warns the customer, in their own language, when something is off.
-
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
-![Sarvam AI](https://img.shields.io/badge/Sarvam%20AI-STT%20%C2%B7%20LLM%20%C2%B7%20TTS-orange)
-![Status](https://img.shields.io/badge/status-hackathon%20prototype-lightgrey)
+Loan and insurance agents know the numbers. Customers usually don't.
+Teesra Kaan listens to the pitch and tells you, in your own language, what it really costs and what to ask before you sign.
 
 </div>
 
 ---
 
-## Overview
+## Why Teesra Kaan
 
 Most voice AI works for the institution. **Teesra Kaan** ("third ear") works for the person across the table.
 
-It listens to a conversation between a borrower or policyholder and an agent, extracts the terms that were actually spoken, computes the **true cost** with a deterministic calculator, and whispers the most important warning back in the customer's language.
-
-**Built for the Sarvam Campus Connect session using the Sarvam API.**
-
-### The problem
-
-| What the agent says                    | What it can really mean                                                                           |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| "Only 1.5% a month, flat rate"         | A flat rate charged on the full principal for the whole tenure, far above a reducing-balance rate |
-| "Insurance is compulsory"              | A bundled premium deducted from the money you receive                                             |
-| "8% guaranteed return, better than FD" | A yearly return that is often well below a bank FD                                                |
-| "Sign today, the offer ends tomorrow"  | Pressure that stops you from reading the terms                                                    |
+A loan or insurance pitch is full of numbers that sound fine and hide the real price. The customer is expected to catch it all in real time, often in a second language, often under pressure to sign today.
 
 > **Example:** ₹1 lakh for 24 months at "1.5% a month flat", with a 2% processing fee and ₹5,000 compulsory insurance, costs about **47.5% a year**, not the 18% it sounds like.
 
+Teesra Kaan does that math for you while the agent is still talking.
+
+### What you get
+
+| Benefit                          | How                                                                                                                   |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Know the real price**          | The true yearly cost of a loan, or the real yearly return of a "guaranteed" policy, shown next to what the agent said |
+| **Catch common tricks**          | Flags flat rates sold as monthly, fees deducted from your payout, "compulsory" insurance, pressure to sign today      |
+| **Never lose the thread**        | A live transcript of the conversation, plus the terms that were actually said                                         |
+| **Know what to say next**        | Short questions you can read out to the agent                                                                         |
+| **Hear it in your own language** | Warnings in 11 languages, written in native script and spoken aloud                                                   |
+| **Trust the numbers**            | All math is done in code, never by the AI model                                                                       |
+
+### What agents say, and what it can mean
+
+| What the agent says                    | What it can really mean                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------- |
+| "Only 1.5% a month, flat rate"         | Interest on the full amount for the whole tenure, far above a reducing rate |
+| "Insurance is compulsory"              | A bundled premium taken out of the money you actually receive               |
+| "8% guaranteed return, better than FD" | A real yearly return that is often well below a bank FD                     |
+| "Sign today, the offer ends tomorrow"  | Pressure that keeps you from reading the terms                              |
+
+### Who it is for
+
+- **Borrowers** comparing personal loan offers.
+- **Policyholders** being sold savings or endowment-style insurance.
+- **Family members** who want a second opinion in the room, in a language everyone understands.
+
 ---
 
-## Features
+## How it works
 
-- **Live listening**: records in 12-second rolling chunks and updates the analysis as the conversation continues.
-- **Code-mixed speech support**: handles Hinglish and regional-language speech.
-- **Red-flag detection**: flat rate sold as monthly, fees deducted from the payout, bundled or "compulsory" insurance, "guaranteed" returns, pressure to sign, prepayment penalties, vague total cost.
-- **Deterministic math**: true annual cost and real yearly return computed in code, never by the LLM.
-- **Questions to ask**: short questions the customer can say out loud to the agent.
-- **Spoken warnings**: the top warning is whispered back in the customer's language.
-- **11 languages**: Hindi, Marathi, Bengali, Tamil, Telugu, Kannada, Malayalam, Gujarati, Punjabi, Odia and English.
-- **Demo mode**: analyze sample pitches as text, with no microphone and no speech credits.
-
----
-
-## Architecture
+1. **Listen.** Press start and put the phone or laptop near the conversation. Audio is captured in 12-second chunks.
+2. **Understand.** Each chunk is transcribed, then the AI extracts only the numbers that were said (amount, tenure, rate, fees, insurance) and spots unfair practices.
+3. **Calculate.** A deterministic calculator turns those numbers into the real annual cost or real return.
+4. **Warn.** The page shows the real cost, red flags and questions to ask, and can whisper the top warning back to you.
 
 ```mermaid
 flowchart TD
@@ -61,29 +66,25 @@ flowchart TD
     F --> G[Bulbul v3<br/>spoken warning]
 ```
 
-| Stage      | Component   | Responsibility                                                               |
-| ---------- | ----------- | ---------------------------------------------------------------------------- |
-| Transcribe | Saaras v4   | Speech-to-text for code-mixed Hinglish and regional speech                   |
-| Understand | Sarvam-105B | Extracts principal, tenure, rate, fees and insurance; flags unfair practices |
-| Calculate  | `calc.py`   | Turns the extracted numbers into the real annual cost or real return         |
-| Warn       | Bulbul v3   | Speaks the top warning in the customer's language                            |
-
 ### Why the math is deterministic
 
-The LLM only **extracts the numbers that were said**. It never computes rates or totals.
+The AI model only **extracts the numbers that were said**. It never computes rates or totals.
 
 `calc.py` converts "1.5% a month flat" plus fees and bundled insurance into the true annual cost (an IRR on the cash the customer actually receives), and converts a "guaranteed" maturity amount into the real yearly return. Language models make arithmetic mistakes, and a financial warning cannot afford one.
 
 ---
 
-## Tech Stack
+## Features
 
-| Layer    | Technology                                     |
-| -------- | ---------------------------------------------- |
-| Speech   | Sarvam Saaras v4 (STT), Sarvam Bulbul v3 (TTS) |
-| LLM      | Sarvam-105B                                    |
-| Backend  | Python, FastAPI, Uvicorn, httpx                |
-| Frontend | Plain HTML, CSS and JavaScript, no build step  |
+- **Live listening** in 12-second rolling chunks, with the analysis updating as the conversation continues.
+- **Code-mixed speech support** for Hinglish and regional-language speech.
+- **Red-flag detection** for flat rates sold as monthly, fees deducted from the payout, bundled or "compulsory" insurance, "guaranteed" returns, pressure to sign, prepayment penalties and vague total cost.
+- **Real cost view** with EMI, cash you actually get, total paid and extra paid, or real return against a bank FD benchmark.
+- **Questions to ask** in short, speakable sentences.
+- **Spoken warnings** with optional auto-whisper of the first high-severity flag.
+- **11 languages:** Hindi, Marathi, Bengali, Tamil, Telugu, Kannada, Malayalam, Gujarati, Punjabi, Odia and English. Your choice is remembered between visits.
+- **Demo mode** to analyze a sample or pasted transcript with no microphone and no speech credits.
+- **Responsive, accessible UI** that works on phones and desktops, follows your light or dark theme, and supports keyboard and screen readers.
 
 ---
 
@@ -95,7 +96,7 @@ The LLM only **extracts the numbers that were said**. It never computes rates or
 - A [Sarvam API key](https://www.sarvam.ai/)
 - Chrome or Edge (recommended for microphone access)
 
-### Installation
+### Install
 
 ```bash
 git clone https://github.com/nevilcp/teesrakaan.git
@@ -113,7 +114,9 @@ cp .env.example .env     # then set SARVAM_API_KEY in .env
 uvicorn app:app --reload --port 8000
 ```
 
-Open **http://localhost:8000**.
+Open **http://localhost:8000**. If the key is missing, the page shows a banner telling you what to fix.
+
+> Browsers only allow microphone access on `localhost` or over HTTPS. To use the mic from a phone, deploy behind HTTPS. Demo mode works anywhere.
 
 ---
 
@@ -122,15 +125,27 @@ Open **http://localhost:8000**.
 ### Live mode
 
 1. Choose the language for warnings in the top-right selector.
-2. Press **Start listening** and place the phone or laptop near the conversation.
+2. Press **Start listening** and place the device near the conversation.
 3. The transcript and warnings update about every 12 seconds.
-4. Press **Whisper warning** to hear the top warning, or leave auto-whisper on.
+4. Press **Stop** to process the last chunk.
+5. Press **Whisper warning** to hear the top warning, or leave auto-whisper on.
 
 ### Demo mode (no microphone)
 
-1. Open **Demo mode**.
-2. Load a sample loan or insurance pitch.
+1. Scroll to the **Demo mode** card.
+2. Load **Sample: loan pitch** or **Sample: insurance pitch**, or paste your own conversation.
 3. Press **Analyze text**.
+
+---
+
+## Tech Stack
+
+| Layer    | Technology                                                |
+| -------- | --------------------------------------------------------- |
+| Speech   | Sarvam Saaras v4 (speech-to-text), Sarvam Bulbul v3 (TTS) |
+| LLM      | Sarvam-105B                                               |
+| Backend  | Python, FastAPI, Uvicorn, httpx                           |
+| Frontend | Vanilla HTML, CSS and ES modules, no framework, no build  |
 
 ---
 
@@ -155,6 +170,7 @@ teesrakaan/
 ├── calc.py           # Loan and insurance math
 ├── static/           # Frontend (vanilla HTML, CSS, ES modules)
 │   ├── index.html
+│   ├── favicon.svg
 │   ├── css/styles.css
 │   └── js/
 │       ├── main.js       # Wiring, session state, analysis flow
@@ -169,6 +185,12 @@ teesrakaan/
 
 ---
 
+## Privacy and limitations
+
+- Audio chunks and transcripts are sent to the Sarvam API for transcription, analysis and speech. This app does not store them.
+- The AI extracts terms from speech, so noisy audio or unclear numbers can produce incomplete results. Check the "What was said" card against what you heard.
+- The real-cost figures are only as good as the extracted numbers. Treat them as a strong warning to ask questions, not as a final quote.
+
 ## Disclaimer
 
-This is a hackathon prototype and **not financial advice**. Always read the sanction letter and the key fact statement before you sign.
+This is a hackathon prototype and **not financial advice**. Always read the written loan or policy documents before you sign.
