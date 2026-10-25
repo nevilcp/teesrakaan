@@ -1,67 +1,174 @@
-# 👂 Teesra Kaan: the third ear
+<div align="center">
 
-A live voice advocate for the **customer's side of the counter**.
+# Teesra Kaan
 
-Teesra Kaan ("third ear") listens to a conversation between a borrower or policyholder and a loan or insurance agent, then warns the customer in their own language when something is off. Most voice AI works for the institution. This one works for the person across the table.
+### The third ear for the customer's side of the counter
 
-Built for the Sarvam Campus Connect session with the Sarvam API.
+A real-time voice assistant that listens to a loan or insurance pitch and warns the customer, in their own language, when something is off.
 
-## How it works
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![Sarvam AI](https://img.shields.io/badge/Sarvam%20AI-STT%20%C2%B7%20LLM%20%C2%B7%20TTS-orange)
+![Status](https://img.shields.io/badge/status-hackathon%20prototype-lightgrey)
 
+</div>
+
+---
+
+## Overview
+
+Most voice AI works for the institution. **Teesra Kaan** ("third ear") works for the person across the table.
+
+It listens to a conversation between a borrower or policyholder and an agent, extracts the terms that were actually spoken, computes the **true cost** with a deterministic calculator, and whispers the most important warning back in the customer's language.
+
+**Built for the Sarvam Campus Connect session using the Sarvam API.**
+
+### The problem
+
+| What the agent says                    | What it can really mean                                                                           |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| "Only 1.5% a month, flat rate"         | A flat rate charged on the full principal for the whole tenure, far above a reducing-balance rate |
+| "Insurance is compulsory"              | A bundled premium deducted from the money you receive                                             |
+| "8% guaranteed return, better than FD" | A yearly return that is often well below a bank FD                                                |
+| "Sign today, the offer ends tomorrow"  | Pressure that stops you from reading the terms                                                    |
+
+> **Example:** ₹1 lakh for 24 months at "1.5% a month flat", with a 2% processing fee and ₹5,000 compulsory insurance, costs about **47.5% a year**, not the 18% it sounds like.
+
+---
+
+## Features
+
+- **Live listening**: records in 12-second rolling chunks and updates the analysis as the conversation continues.
+- **Code-mixed speech support**: handles Hinglish and regional-language speech.
+- **Red-flag detection**: flat rate sold as monthly, fees deducted from the payout, bundled or "compulsory" insurance, "guaranteed" returns, pressure to sign, prepayment penalties, vague total cost.
+- **Deterministic math**: true annual cost and real yearly return computed in code, never by the LLM.
+- **Questions to ask**: short questions the customer can say out loud to the agent.
+- **Spoken warnings**: the top warning is whispered back in the customer's language.
+- **11 languages**: Hindi, Marathi, Bengali, Tamil, Telugu, Kannada, Malayalam, Gujarati, Punjabi, Odia and English.
+- **Demo mode**: analyze sample pitches as text, with no microphone and no speech credits.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+    A[Microphone<br/>12s rolling chunks] --> B[Saaras v4<br/>speech-to-text]
+    B --> C[Hinglish / regional transcript]
+    C --> D[Sarvam-105B<br/>extract terms + spot tricks]
+    D --> E[calc.py<br/>deterministic real cost]
+    E --> F[UI: cost cards, red flags,<br/>questions to ask]
+    F --> G[Bulbul v3<br/>spoken warning]
 ```
- mic (12s rolling chunks)
-        │
-        ▼
- Saaras v4  ──►  Hinglish / regional transcript
-        │
-        ▼
- Sarvam-105B ──►  extracts terms (principal, tenure, rate, fees, bundled insurance)
-        │         and spots tricks (flat rate sold as monthly, "compulsory" insurance, pressure to sign)
-        ▼
- calc.py (deterministic) ──►  real annual cost / real return
-        │
-        ▼
- UI cards + red flags + questions to ask  ──►  Bulbul v3 whispers the top warning back
-```
 
-## Why the math is deterministic
+| Stage      | Component   | Responsibility                                                               |
+| ---------- | ----------- | ---------------------------------------------------------------------------- |
+| Transcribe | Saaras v4   | Speech-to-text for code-mixed Hinglish and regional speech                   |
+| Understand | Sarvam-105B | Extracts principal, tenure, rate, fees and insurance; flags unfair practices |
+| Calculate  | `calc.py`   | Turns the extracted numbers into the real annual cost or real return         |
+| Warn       | Bulbul v3   | Speaks the top warning in the customer's language                            |
 
-The LLM only **extracts the numbers that were said**. It never computes rates or totals. `calc.py` turns "1.5% a month flat" plus fees and bundled insurance into the true annual cost (an IRR on the cash you actually receive), and turns a "guaranteed" maturity amount into the real yearly return. Language models make arithmetic mistakes, and a financial warning cannot afford one.
+### Why the math is deterministic
 
-Example: ₹1 lakh for 24 months at "1.5% a month flat", with a 2% processing fee and ₹5,000 compulsory insurance, costs about **47.5% a year**, not the 18% it sounds like.
+The LLM only **extracts the numbers that were said**. It never computes rates or totals.
 
-## Run it
+`calc.py` converts "1.5% a month flat" plus fees and bundled insurance into the true annual cost (an IRR on the cash the customer actually receives), and converts a "guaranteed" maturity amount into the real yearly return. Language models make arithmetic mistakes, and a financial warning cannot afford one.
+
+---
+
+## Tech Stack
+
+| Layer    | Technology                                     |
+| -------- | ---------------------------------------------- |
+| Speech   | Sarvam Saaras v4 (STT), Sarvam Bulbul v3 (TTS) |
+| LLM      | Sarvam-105B                                    |
+| Backend  | Python, FastAPI, Uvicorn, httpx                |
+| Frontend | Plain HTML, CSS and JavaScript, no build step  |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.10 or newer
+- A [Sarvam API key](https://www.sarvam.ai/)
+- Chrome or Edge (recommended for microphone access)
+
+### Installation
 
 ```bash
+git clone https://github.com/nevilcp/teesrakaan.git
+cd teesrakaan
+
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env          # then put your SARVAM_API_KEY in .env
+
+cp .env.example .env     # then set SARVAM_API_KEY in .env
+```
+
+### Run
+
+```bash
 uvicorn app:app --reload --port 8000
 ```
 
-Open http://localhost:8000 (Chrome or Edge recommended for the microphone).
+Open **http://localhost:8000**.
 
-- **Live:** press _Start listening_ and put the phone or laptop near the conversation. The transcript and warnings update about every 12 seconds.
-- **Demo mode (no microphone, no speech credits):** open _Demo mode_, load a sample loan or insurance pitch, and press _Analyze text_.
-- Pick the language you want warnings in from the top-right selector. Press _Whisper warning_ to hear it spoken, or leave auto-whisper on.
+---
 
-## Stack
+## Usage
 
-- **Sarvam Saaras v4**: speech-to-text for code-mixed Hinglish and regional speech
-- **Sarvam-105B**: term extraction and red-flag analysis
-- **Sarvam Bulbul v3**: spoken warnings in the customer's language
-- **FastAPI** backend, plain HTML/JS browser front end (no build step)
+### Live mode
 
-## Files
+1. Choose the language for warnings in the top-right selector.
+2. Press **Start listening** and place the phone or laptop near the conversation.
+3. The transcript and warnings update about every 12 seconds.
+4. Press **Whisper warning** to hear the top warning, or leave auto-whisper on.
 
-| File                | Role                                                                           |
-| ------------------- | ------------------------------------------------------------------------------ |
-| `app.py`            | FastAPI routes: `/api/transcribe`, `/api/analyze`, `/api/speak`, `/api/health` |
-| `sarvam.py`         | Thin async client for the Sarvam APIs                                          |
-| `analyzer.py`       | Prompt, LLM extraction, and merging of deterministic flags                     |
-| `calc.py`           | Loan and insurance math                                                        |
-| `static/index.html` | The whole UI                                                                   |
+### Demo mode (no microphone)
 
-## Notes
+1. Open **Demo mode**.
+2. Load a sample loan or insurance pitch.
+3. Press **Analyze text**.
 
-This is a hackathon prototype, not financial advice. Always read the sanction letter and key fact statement before you sign.
+---
+
+## API
+
+| Method | Endpoint          | Description                                         |
+| ------ | ----------------- | --------------------------------------------------- |
+| `GET`  | `/api/health`     | Service status and whether an API key is configured |
+| `POST` | `/api/transcribe` | Audio chunk to transcript                           |
+| `POST` | `/api/analyze`    | Transcript to extracted terms, real cost and flags  |
+| `POST` | `/api/speak`      | Text to spoken audio                                |
+
+---
+
+## Project Structure
+
+```
+teesrakaan/
+├── app.py            # FastAPI routes
+├── sarvam.py         # Async client for the Sarvam APIs
+├── analyzer.py       # Prompt, LLM extraction, merging of deterministic flags
+├── calc.py           # Loan and insurance math
+├── static/           # Frontend (vanilla HTML, CSS, ES modules)
+│   ├── index.html
+│   ├── css/styles.css
+│   └── js/
+│       ├── main.js       # Wiring, session state, analysis flow
+│       ├── recorder.js   # Rolling microphone chunks
+│       ├── api.js        # Backend calls
+│       ├── render.js     # Cost, flags, questions, terms
+│       ├── ui.js         # DOM helpers, toast, storage
+│       └── samples.js    # Demo pitches
+├── requirements.txt
+└── .env.example
+```
+
+---
+
+## Disclaimer
+
+This is a hackathon prototype and **not financial advice**. Always read the sanction letter and the key fact statement before you sign.
