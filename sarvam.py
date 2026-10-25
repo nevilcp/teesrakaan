@@ -106,7 +106,7 @@ async def chat_json(system: str, user: str) -> dict:
             {"role": "user", "content": user},
         ],
         "temperature": 0.2,
-        # extraction needs no reasoning; "low" burned the whole token budget
+        # no reasoning: "low" burned the whole token budget
         "reasoning_effort": None,
         "max_tokens": 4096,
         "response_format": {"type": "json_object"},

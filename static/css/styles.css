@@ -85,7 +85,6 @@ body {
   padding: 16px 16px 32px;
 }
 
-/* Header */
 .header {
   display: flex;
   flex-wrap: wrap;
@@ -143,7 +142,7 @@ select {
   padding: 8px 10px;
 }
 
-/* Layout: single column on phones, two columns on wider screens */
+/* Single column on phones, two on wider screens */
 .layout {
   display: grid;
   grid-template-columns: 1fr;
@@ -180,7 +179,6 @@ select {
   }
 }
 
-/* Cards */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -208,7 +206,6 @@ select {
   color: var(--muted);
 }
 
-/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -283,7 +280,6 @@ select {
   align-items: center;
 }
 
-/* Listen */
 .status {
   display: inline-flex;
   align-items: center;
@@ -333,7 +329,6 @@ select {
   color: var(--muted);
 }
 
-/* Demo */
 textarea {
   display: block;
   width: 100%;
@@ -343,7 +338,6 @@ textarea {
   resize: vertical;
 }
 
-/* Whisper bar */
 .whisper-bar {
   display: flex;
   flex-wrap: wrap;
@@ -365,7 +359,6 @@ textarea {
   accent-color: var(--accent);
 }
 
-/* Real cost */
 .cost-heading {
   margin: 0 0 8px;
   font-size: 0.78rem;
@@ -429,7 +422,6 @@ textarea {
   font-size: 0.8rem;
 }
 
-/* Flags */
 .flag {
   margin-bottom: 8px;
   padding: 10px 12px;
@@ -482,7 +474,6 @@ textarea {
   color: var(--warn);
 }
 
-/* Questions and terms */
 .questions {
   margin: 0;
   padding-left: 20px;
@@ -512,7 +503,6 @@ textarea {
   font-weight: 600;
 }
 
-/* Banner, toast, footer */
 .banner {
   margin-bottom: 16px;
   padding: 10px 14px;

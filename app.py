@@ -32,7 +32,7 @@ log = logging.getLogger("teesrakaan")
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
-# A 12 s browser audio chunk is well under 200 KB; these leave generous headroom.
+# A 12 s audio chunk is under 200 KB; these leave headroom.
 MAX_AUDIO_BYTES = 2 * 1024 * 1024
 MAX_BODY_BYTES = 3 * 1024 * 1024
 MAX_TRANSCRIPT_CHARS = 30_000
@@ -40,8 +40,7 @@ MAX_SPEAK_CHARS = 2_400
 
 limiter = RateLimiter(int(os.getenv("RATE_LIMIT_PER_MINUTE", "40")))
 
-# Everything is same-origin, so the policy can be strict. Audio from /api/speak is
-# played from a data: URI.
+# Same-origin only; /api/speak audio plays from a data: URI.
 SECURITY_HEADERS = {
     "Content-Security-Policy": (
         "default-src 'self'; img-src 'self' data:; media-src 'self' data:; "
@@ -62,7 +61,6 @@ async def lifespan(_: FastAPI):
     await sarvam.aclose()
 
 
-# The interactive docs and OpenAPI schema are off: nothing here is a public API.
 app = FastAPI(
     title="Teesra Kaan",
     lifespan=lifespan,
@@ -92,7 +90,7 @@ class SpeakIn(BaseModel):
 
 
 def rate_limit(request: Request) -> None:
-    # Behind a proxy, uvicorn's --proxy-headers makes this the real client IP.
+    # Real client IP when uvicorn runs behind a proxy.
     wait = limiter.check(request.client.host if request.client else "unknown")
     if wait:
         raise HTTPException(
@@ -120,7 +118,7 @@ async def guard(request: Request, call_next):
         response.headers["Strict-Transport-Security"] = (
             "max-age=31536000; includeSubDomains"
         )
-    # Static files carry an ETag, so no-cache means "revalidate", not "never cache".
+    # no-cache revalidates via ETag; it does not disable caching.
     is_api = request.url.path.startswith("/api/")
     response.headers["Cache-Control"] = "no-store" if is_api else "no-cache"
     return response
@@ -128,7 +126,7 @@ async def guard(request: Request, call_next):
 
 @app.exception_handler(sarvam.SarvamError)
 async def sarvam_error(_, exc: sarvam.SarvamError):
-    # The upstream body can contain account details, so it stays in the logs.
+    # Upstream bodies can hold account details, so only log them.
     log.error("Sarvam API error %s: %s", exc.status, exc.body[:500])
     if exc.status == 429:
         return JSONResponse(
@@ -143,7 +141,7 @@ async def sarvam_error(_, exc: sarvam.SarvamError):
 
 @app.exception_handler(RequestValidationError)
 async def validation_error(_, exc: RequestValidationError):
-    # Report the field and rule, never the submitted value.
+    # Never echo the submitted value.
     first = exc.errors()[0]
     field = ".".join(str(p) for p in first["loc"] if p != "body")
     return JSONResponse(

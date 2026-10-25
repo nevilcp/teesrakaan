@@ -49,7 +49,6 @@ function setLive(live) {
   $("dot").classList.toggle("live", live);
 }
 
-// ---------- analysis ----------
 async function runAnalysis() {
   if (session.analyzing) {
     session.rerun = true;
@@ -104,7 +103,6 @@ function appendTranscript(text) {
     runAnalysis();
 }
 
-// ---------- spoken warning ----------
 async function whisper() {
   if (!session.whisperText) return;
   $("whisperBtn").disabled = true;
@@ -120,7 +118,6 @@ async function whisper() {
   }
 }
 
-// ---------- microphone ----------
 const recorder = createRecorder({
   chunkMs: CHUNK_MS,
   onText: appendTranscript,
@@ -150,7 +147,6 @@ $("micBtn").onclick = async () => {
   }
 };
 
-// ---------- demo mode ----------
 $("sampleLoan").onclick = () => ($("demoText").value = SAMPLES.loan);
 $("sampleIns").onclick = () => ($("demoText").value = SAMPLES.insurance);
 $("demoBtn").onclick = () => {
@@ -166,7 +162,6 @@ $("demoBtn").onclick = () => {
 
 $("whisperBtn").onclick = whisper;
 
-// ---------- init ----------
 const savedLang = store(LANG_KEY);
 if (savedLang && [...$("lang").options].some((o) => o.value === savedLang)) {
   $("lang").value = savedLang;

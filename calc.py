@@ -68,7 +68,7 @@ def loan_cost(
             )
             method = "reducing"
     if emi_quoted and (emi is None or abs(emi_quoted - emi) / emi > 0.02):
-        # Trust the EMI the agent actually quoted over a rate that doesn't match it.
+        # Trust the quoted EMI over a rate that doesn't match it.
         emi, method = float(emi_quoted), "quoted_emi"
     if emi is None:
         return None
