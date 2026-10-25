@@ -4,16 +4,31 @@ import calc
 import sarvam
 
 LANG_NAMES = {
-    "hi-IN": "Hindi", "bn-IN": "Bengali", "ta-IN": "Tamil", "te-IN": "Telugu",
-    "kn-IN": "Kannada", "ml-IN": "Malayalam", "mr-IN": "Marathi", "gu-IN": "Gujarati",
-    "pa-IN": "Punjabi", "od-IN": "Odia", "en-IN": "English",
+    "hi-IN": "Hindi",
+    "bn-IN": "Bengali",
+    "ta-IN": "Tamil",
+    "te-IN": "Telugu",
+    "kn-IN": "Kannada",
+    "ml-IN": "Malayalam",
+    "mr-IN": "Marathi",
+    "gu-IN": "Gujarati",
+    "pa-IN": "Punjabi",
+    "od-IN": "Odia",
+    "en-IN": "English",
 }
 
 SCRIPTS = {
-    "hi-IN": "Devanagari (हिन्दी)", "mr-IN": "Devanagari (मराठी)", "bn-IN": "Bengali script (বাংলা)",
-    "ta-IN": "Tamil script (தமிழ்)", "te-IN": "Telugu script (తెలుగు)", "kn-IN": "Kannada script (ಕನ್ನಡ)",
-    "ml-IN": "Malayalam script (മലയാളം)", "gu-IN": "Gujarati script (ગુજરાતી)",
-    "pa-IN": "Gurmukhi (ਪੰਜਾਬੀ)", "od-IN": "Odia script (ଓଡ଼ିଆ)", "en-IN": "English",
+    "hi-IN": "Devanagari (हिन्दी)",
+    "mr-IN": "Devanagari (मराठी)",
+    "bn-IN": "Bengali script (বাংলা)",
+    "ta-IN": "Tamil script (தமிழ்)",
+    "te-IN": "Telugu script (తెలుగు)",
+    "kn-IN": "Kannada script (ಕನ್ನಡ)",
+    "ml-IN": "Malayalam script (മലയാളം)",
+    "gu-IN": "Gujarati script (ગુજરાતી)",
+    "pa-IN": "Gurmukhi (ਪੰਜਾਬੀ)",
+    "od-IN": "Odia script (ଓଡ଼ିଆ)",
+    "en-IN": "English",
 }
 
 SYSTEM_PROMPT = """You are Teesra Kaan, a voice advocate who works for the CUSTOMER (borrower or policyholder), not the agent. You read a transcript of a conversation between a customer and a loan or insurance agent and warn the customer about anything unfair.
@@ -63,7 +78,7 @@ def _clean(d: dict | None) -> dict:
 def _safe(fn, d: dict):
     try:
         return fn(**_clean(d))
-    except Exception:
+    except (TypeError, ValueError, ArithmeticError):
         return None
 
 
@@ -80,8 +95,10 @@ async def analyze(transcript: str, language_code: str) -> dict:
     x = await sarvam.chat_json(
         SYSTEM_PROMPT.format(lang_name=lang),
         f"Conversation transcript so far:\n{transcript}\n\n"
-        f"REMINDER: the transcript may be in Roman letters, but write explain, questions_to_ask, top_warning and "
-        f"real_cost_sentence in {lang} using {SCRIPTS.get(language_code, 'its native script')} only, not Roman letters.",
+        "REMINDER: the transcript may be in Roman letters, but write explain, "
+        "questions_to_ask, top_warning and "
+        f"real_cost_sentence in {lang} using "
+        f"{SCRIPTS.get(language_code, 'its native script')} only, not Roman letters.",
     )
 
     loan = _safe(calc.loan_cost, x.get("loan"))
@@ -89,22 +106,60 @@ async def analyze(transcript: str, language_code: str) -> dict:
 
     flags = []
     if loan:
-        real, quoted = loan.get("real_annual_percent"), loan.get("quoted_annual_percent")
+        real, quoted = (
+            loan.get("real_annual_percent"),
+            loan.get("quoted_annual_percent"),
+        )
         if real is not None and quoted and real >= 1.3 * quoted:
-            flags.append({"severity": "high", "title_en": f"Real cost {_fmt(real)}%/yr vs quoted {_fmt(quoted)}%", "explain": ""})
+            flags.append(
+                {
+                    "severity": "high",
+                    "title_en": f"Real cost {_fmt(real)}%/yr vs quoted {_fmt(quoted)}%",
+                    "explain": "",
+                }
+            )
         if loan["cash_in_hand"] < loan["loan_amount"]:
-            flags.append({"severity": "medium", "title_en": f"You receive ₹{_inr(loan['cash_in_hand'])} but repay on ₹{_inr(loan['loan_amount'])}", "explain": ""})
-    if ins and ins.get("real_annual_percent") is not None and ins["real_annual_percent"] < 6:
-        flags.append({"severity": "high", "title_en": f"Real return {_fmt(ins['real_annual_percent'])}%/yr — below a bank FD (~7%)", "explain": ""})
+            flags.append(
+                {
+                    "severity": "medium",
+                    "title_en": (
+                        f"You receive ₹{_inr(loan['cash_in_hand'])} "
+                        f"but repay on ₹{_inr(loan['loan_amount'])}"
+                    ),
+                    "explain": "",
+                }
+            )
+    if (
+        ins
+        and ins.get("real_annual_percent") is not None
+        and ins["real_annual_percent"] < 6
+    ):
+        flags.append(
+            {
+                "severity": "high",
+                "title_en": (
+                    f"Real return {_fmt(ins['real_annual_percent'])}%/yr "
+                    "— below a bank FD (~7%)"
+                ),
+                "explain": "",
+            }
+        )
 
     x["red_flags"] = flags + list(x.get("red_flags") or [])
 
     real_rate = (loan or ins or {}).get("real_annual_percent")
-    explained = sorted((f for f in x["red_flags"] if f.get("explain")), key=lambda f: f.get("severity") != "high")
+    explained = sorted(
+        (f for f in x["red_flags"] if f.get("explain")),
+        key=lambda f: f.get("severity") != "high",
+    )
     parts = [x.get("top_warning") or (explained[0]["explain"] if explained else "")]
     sentence = x.get("real_cost_sentence") or ""
     if real_rate is not None and "{REAL_RATE}" in sentence:
         parts.append(sentence.replace("{REAL_RATE}", _fmt(real_rate)))
     parts.extend((x.get("questions_to_ask") or [])[:2])
 
-    return {**x, "calc": {"loan": loan, "insurance": ins}, "whisper_text": " ".join(p for p in parts if p)}
+    return {
+        **x,
+        "calc": {"loan": loan, "insurance": ins},
+        "whisper_text": " ".join(p for p in parts if p),
+    }

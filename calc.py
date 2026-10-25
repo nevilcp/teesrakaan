@@ -1,9 +1,7 @@
 """Deterministic money math. The LLM extracts numbers; it never computes them."""
 
-from typing import Optional
 
-
-def _irr(cash_in: float, payment: float, periods: int) -> Optional[float]:
+def _irr(cash_in: float, payment: float, periods: int) -> float | None:
     """Per-period rate i such that cash_in == payment * annuity(i, periods)."""
     if cash_in <= 0 or payment <= 0 or periods <= 0:
         return None
@@ -28,22 +26,22 @@ def _annual_from_monthly(i: float) -> float:
 
 
 def loan_cost(
-    principal: Optional[float],
-    tenure_months: Optional[float],
-    quoted_rate_percent: Optional[float] = None,
-    rate_period: Optional[str] = None,
-    rate_type: Optional[str] = None,
-    emi_quoted: Optional[float] = None,
-    processing_fee: Optional[float] = None,
-    processing_fee_percent: Optional[float] = None,
-    insurance_premium: Optional[float] = None,
-    insurance_financed: Optional[bool] = None,
-    other_fees: Optional[float] = None,
+    principal: float | None,
+    tenure_months: float | None,
+    quoted_rate_percent: float | None = None,
+    rate_period: str | None = None,
+    rate_type: str | None = None,
+    emi_quoted: float | None = None,
+    processing_fee: float | None = None,
+    processing_fee_percent: float | None = None,
+    insurance_premium: float | None = None,
+    insurance_financed: bool | None = None,
+    other_fees: float | None = None,
     **_,
-) -> Optional[dict]:
+) -> dict | None:
     if not principal or not tenure_months:
         return None
-    n = int(round(tenure_months))
+    n = round(tenure_months)
     P = float(principal)
 
     fee = float(processing_fee or 0)
@@ -52,7 +50,7 @@ def loan_cost(
     ins = float(insurance_premium or 0)
     other = float(other_fees or 0)
 
-    # Financed add-ons raise the loan amount; upfront ones cut the cash you actually get.
+    # Financed add-ons raise the loan amount; upfront ones cut the cash you get.
     loan_amount = P + (ins if insurance_financed else 0)
     cash_in_hand = P - fee - other - (0 if insurance_financed else ins)
 
@@ -63,7 +61,11 @@ def loan_cost(
             emi = (loan_amount + loan_amount * monthly * n) / n
             method = "flat"
         else:
-            emi = loan_amount / n if monthly == 0 else loan_amount * monthly / (1 - (1 + monthly) ** -n)
+            emi = (
+                loan_amount / n
+                if monthly == 0
+                else loan_amount * monthly / (1 - (1 + monthly) ** -n)
+            )
             method = "reducing"
     if emi_quoted and (emi is None or abs(emi_quoted - emi) / emi > 0.02):
         # Trust the EMI the agent actually quoted over a rate that doesn't match it.
@@ -85,24 +87,26 @@ def loan_cost(
         "total_paid": round(total_paid),
         "total_extra": round(total_paid - cash_in_hand),
         "quoted_annual_percent": round(quoted_annual, 2) if quoted_annual else None,
-        "real_annual_percent": round(_annual_from_monthly(i), 1) if i is not None else None,
+        "real_annual_percent": round(_annual_from_monthly(i), 1)
+        if i is not None
+        else None,
         "method": method,
     }
 
 
 def insurance_return(
-    annual_premium: Optional[float],
-    premium_paying_years: Optional[float],
-    maturity_amount: Optional[float],
-    policy_years: Optional[float] = None,
-    claimed_return_percent: Optional[float] = None,
+    annual_premium: float | None,
+    premium_paying_years: float | None,
+    maturity_amount: float | None,
+    policy_years: float | None = None,
+    claimed_return_percent: float | None = None,
     **_,
-) -> Optional[dict]:
+) -> dict | None:
     """Real yearly return of a pay-N-years, get-lump-sum-at-maturity savings policy."""
     if not annual_premium or not premium_paying_years or not maturity_amount:
         return None
-    ppt = int(round(premium_paying_years))
-    term = int(round(policy_years or premium_paying_years))
+    ppt = round(premium_paying_years)
+    term = round(policy_years or premium_paying_years)
     term = max(term, ppt)
 
     def npv(r: float) -> float:

@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -36,7 +38,7 @@ async def health():
 
 
 @app.post("/api/transcribe")
-async def transcribe(file: UploadFile = File(...)):
+async def transcribe(file: Annotated[UploadFile, File()]):
     audio = await file.read()
     if len(audio) < 2048:  # silence / empty chunk
         return {"transcript": "", "language_code": None}

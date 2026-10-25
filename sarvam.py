@@ -12,9 +12,25 @@ BASE = "https://api.sarvam.ai"
 KEY = os.getenv("SARVAM_API_KEY")
 
 KEYTERMS = [
-    "EMI", "processing fee", "flat rate", "reducing balance", "interest", "tenure",
-    "foreclosure", "prepayment", "insurance", "premium", "maturity", "sum assured",
-    "bonus", "guaranteed return", "lakh", "hazaar", "mahina", "byaaj", "kisht",
+    "EMI",
+    "processing fee",
+    "flat rate",
+    "reducing balance",
+    "interest",
+    "tenure",
+    "foreclosure",
+    "prepayment",
+    "insurance",
+    "premium",
+    "maturity",
+    "sum assured",
+    "bonus",
+    "guaranteed return",
+    "lakh",
+    "hazaar",
+    "mahina",
+    "byaaj",
+    "kisht",
 ]
 
 _client = httpx.AsyncClient(timeout=60)
@@ -29,7 +45,9 @@ class SarvamError(Exception):
 
 def _key() -> str:
     if not KEY:
-        raise SarvamError(500, "SARVAM_API_KEY is not set. Create a .env file (see .env.example).")
+        raise SarvamError(
+            500, "SARVAM_API_KEY is not set. Create a .env file (see .env.example)."
+        )
     return KEY
 
 
@@ -51,7 +69,10 @@ async def transcribe(audio: bytes, filename: str, content_type: str) -> dict:
         },
     )
     j = _check(r).json()
-    return {"transcript": j.get("transcript") or "", "language_code": j.get("language_code")}
+    return {
+        "transcript": j.get("transcript") or "",
+        "language_code": j.get("language_code"),
+    }
 
 
 def _parse_json(text: str) -> dict:
@@ -74,16 +95,22 @@ async def chat_json(system: str, user: str) -> dict:
     headers = {"Authorization": f"Bearer {key}", "api-subscription-key": key}
     body = {
         "model": "sarvam-105b",
-        "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
         "temperature": 0.2,
-        "reasoning_effort": None,  # extraction needs no reasoning; "low" burned the whole token budget
+        # extraction needs no reasoning; "low" burned the whole token budget
+        "reasoning_effort": None,
         "max_tokens": 4096,
         "response_format": {"type": "json_object"},
     }
     r = await _client.post(f"{BASE}/v1/chat/completions", headers=headers, json=body)
     if r.status_code in (400, 422):
         body.pop("response_format")
-        r = await _client.post(f"{BASE}/v1/chat/completions", headers=headers, json=body)
+        r = await _client.post(
+            f"{BASE}/v1/chat/completions", headers=headers, json=body
+        )
     j = _check(r).json()
     return _parse_json(j["choices"][0]["message"].get("content"))
 
