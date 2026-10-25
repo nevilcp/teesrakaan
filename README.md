@@ -118,6 +118,22 @@ Open **http://localhost:8000**. If the key is missing, the page shows a banner t
 
 > Browsers only allow microphone access on `localhost` or over HTTPS. To use the mic from a phone, deploy behind HTTPS. Demo mode works anywhere.
 
+### Configuration
+
+| Variable                | Required | Default | Purpose                                       |
+| ----------------------- | -------- | ------- | --------------------------------------------- |
+| `SARVAM_API_KEY`        | yes      |         | Sarvam API key                                |
+| `RATE_LIMIT_PER_MINUTE` | no       | `40`    | API requests allowed per client IP per minute |
+| `LOG_LEVEL`             | no       | `INFO`  | Python log level                              |
+
+### Test
+
+```bash
+pip install -r requirements-dev.txt
+ruff check . && ruff format --check .
+pytest
+```
+
 ---
 
 ## Usage
@@ -158,13 +174,16 @@ Open **http://localhost:8000**. If the key is missing, the page shows a banner t
 | `POST` | `/api/analyze`    | Transcript to extracted terms, real cost and flags  |
 | `POST` | `/api/speak`      | Text to spoken audio                                |
 
+Every endpoint except `/api/health` is rate limited per client IP (HTTP 429 with `Retry-After`). Audio chunks are capped at 2 MB, transcripts at 30,000 characters and spoken text at 2,400 characters. The interactive API docs are disabled.
+
 ---
 
 ## Project Structure
 
 ```
 teesrakaan/
-├── app.py            # FastAPI routes
+├── app.py            # FastAPI routes, limits, security headers
+├── ratelimit.py      # Per-client sliding-window rate limiter
 ├── sarvam.py         # Async client for the Sarvam APIs
 ├── analyzer.py       # Prompt, LLM extraction, merging of deterministic flags
 ├── calc.py           # Loan and insurance math
@@ -179,11 +198,41 @@ teesrakaan/
 │       ├── render.js     # Cost, flags, questions, terms
 │       ├── ui.js         # DOM helpers, toast, storage
 │       └── samples.js    # Demo pitches
-├── requirements.txt
+├── tests/            # pytest suite for the calculator, limits and API
+├── Dockerfile
+├── requirements.txt  # Pinned runtime dependencies
+├── requirements-dev.txt
+├── pyproject.toml    # ruff and pytest settings
+├── .github/          # CI, image publishing, Dependabot
 └── .env.example
 ```
 
 ---
+
+## Deployment
+
+The app is one stateless container: no database, one secret (`SARVAM_API_KEY`).
+
+### CI and image publishing (GitHub Actions)
+
+`.github/workflows/ci.yml` runs on every push and pull request: ruff, pytest, then a Docker build with a container smoke test. Pushes to `main` and `v*` tags also publish the image to GitHub Container Registry as `ghcr.io/nevilcp/teesrakaan` (tags `latest`, the commit SHA, and the version for tags). Dependabot keeps Python packages, the base image and the Actions up to date.
+
+### Running the container
+
+```bash
+docker run -p 8000:8000 -e SARVAM_API_KEY=... ghcr.io/nevilcp/teesrakaan:latest
+```
+
+The server reads `$PORT` (default 8000), runs as a non-root user, and has a built-in health check on `/api/health`.
+
+### Production checklist
+
+- **HTTPS is required** for the microphone. Terminate TLS at the host's proxy. The app adds HSTS when it sees HTTPS.
+- **Keep the container behind a trusted proxy.** The image sets `FORWARDED_ALLOW_IPS=*` so the rate limiter sees real client IPs. Never expose the container port directly to the internet, or clients could spoof their IP.
+- **Store `SARVAM_API_KEY` in the host's secret manager**, not in the image or the repository.
+- **Cap spend**: set a usage alert in the Sarvam dashboard and a maximum instance count on the host. The rate limiter is per process, so the real limit is `RATE_LIMIT_PER_MINUTE` times the number of instances.
+- **Monitor** `/api/health` with an uptime check. Logs never contain audio or transcripts.
+- **Rotate the key** if it is ever exposed.
 
 ## Privacy and limitations
 
