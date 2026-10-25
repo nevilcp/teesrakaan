@@ -203,7 +203,7 @@ teesrakaan/
 ├── requirements.txt  # Pinned runtime dependencies
 ├── requirements-dev.txt
 ├── pyproject.toml    # ruff and pytest settings
-├── .github/          # CI, image publishing, Dependabot
+├── .github/          # CI and image publishing
 └── .env.example
 ```
 
@@ -215,7 +215,7 @@ The app is one stateless container: no database, one secret (`SARVAM_API_KEY`).
 
 ### CI and image publishing (GitHub Actions)
 
-`.github/workflows/ci.yml` runs on every push and pull request: ruff, pytest, then a Docker build with a container smoke test. Pushes to `main` and `v*` tags also publish the image to GitHub Container Registry as `ghcr.io/nevilcp/teesrakaan` (tags `latest`, the commit SHA, and the version for tags). Dependabot keeps Python packages, the base image and the Actions up to date.
+`.github/workflows/ci.yml` runs on every push and pull request: ruff, pytest, then a Docker build with a container smoke test. Pushes to `main` and `v*` tags also publish the image to GitHub Container Registry as `ghcr.io/nevilcp/teesrakaan` (tags `latest`, the commit SHA, and the version for tags).
 
 ### Running the container
 
