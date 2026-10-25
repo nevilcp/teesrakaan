@@ -60,13 +60,19 @@
       </header>
 
       <div id="banner" class="banner" role="alert" hidden>
-        Sarvam API key not configured. Create a <code>.env</code> file with
-        <code>SARVAM_API_KEY=...</code> and restart the server.
+        Sarvam API key not configured. Set the
+        <code>SARVAM_API_KEY</code> environment variable (locally, in a
+        <code>.env</code> file) and restart the server.
       </div>
 
       <main class="layout">
         <section class="card area-listen" aria-labelledby="listen-title">
           <h2 id="listen-title" class="card-title">Listen</h2>
+          <p class="notice">
+            Audio is sent to Sarvam AI for transcription and is not stored by
+            this app. Tell the other person you are using an assistant, and
+            record only where you have their consent.
+          </p>
           <div class="controls">
             <button id="micBtn" class="btn btn-primary" type="button">
               <svg class="ic ic-mic" viewBox="0 0 24 24" aria-hidden="true">

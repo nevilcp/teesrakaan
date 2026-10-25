@@ -33,7 +33,11 @@ KEYTERMS = [
     "kisht",
 ]
 
-_client = httpx.AsyncClient(timeout=60)
+_client = httpx.AsyncClient(timeout=httpx.Timeout(60, connect=10))
+
+
+async def aclose() -> None:
+    await _client.aclose()
 
 
 class SarvamError(Exception):
@@ -87,7 +91,9 @@ def _parse_json(text: str) -> dict:
     try:
         return json.loads(text[start : end + 1])
     except json.JSONDecodeError as e:
-        raise SarvamError(502, f"Model returned invalid JSON ({e}): {text[:200]}")
+        raise SarvamError(
+            502, f"Model returned invalid JSON ({e}): {text[:200]}"
+        ) from e
 
 
 async def chat_json(system: str, user: str) -> dict:
