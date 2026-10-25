@@ -41,9 +41,9 @@ uvicorn app:app --reload --port 8000
 
 Open http://localhost:8000 (Chrome or Edge recommended for the microphone).
 
-- **Live:** press *Start listening* and put the phone or laptop near the conversation. The transcript and warnings update about every 12 seconds.
-- **Demo mode (no microphone, no speech credits):** open *Demo mode*, load a sample loan or insurance pitch, and press *Analyze text*.
-- Pick the language you want warnings in from the top-right selector. Press *Whisper warning* to hear it spoken, or leave auto-whisper on.
+- **Live:** press _Start listening_ and put the phone or laptop near the conversation. The transcript and warnings update about every 12 seconds.
+- **Demo mode (no microphone, no speech credits):** open _Demo mode_, load a sample loan or insurance pitch, and press _Analyze text_.
+- Pick the language you want warnings in from the top-right selector. Press _Whisper warning_ to hear it spoken, or leave auto-whisper on.
 
 ## Stack
 
@@ -54,13 +54,13 @@ Open http://localhost:8000 (Chrome or Edge recommended for the microphone).
 
 ## Files
 
-| File | Role |
-|---|---|
-| `app.py` | FastAPI routes: `/api/transcribe`, `/api/analyze`, `/api/speak`, `/api/health` |
-| `sarvam.py` | Thin async client for the Sarvam APIs |
-| `analyzer.py` | Prompt, LLM extraction, and merging of deterministic flags |
-| `calc.py` | Loan and insurance math |
-| `static/index.html` | The whole UI |
+| File                | Role                                                                           |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `app.py`            | FastAPI routes: `/api/transcribe`, `/api/analyze`, `/api/speak`, `/api/health` |
+| `sarvam.py`         | Thin async client for the Sarvam APIs                                          |
+| `analyzer.py`       | Prompt, LLM extraction, and merging of deterministic flags                     |
+| `calc.py`           | Loan and insurance math                                                        |
+| `static/index.html` | The whole UI                                                                   |
 
 ## Notes
 
